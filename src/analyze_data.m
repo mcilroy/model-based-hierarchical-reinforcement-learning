@@ -14,4 +14,8 @@ function analyze_data()
     end
     legend(legend_vals(1,:));
     
+    
+    figure; hold on;
+    plot(modelfree_avg_moves(1,:));
+    legend('model free');
 end

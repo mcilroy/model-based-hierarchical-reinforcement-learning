@@ -2,10 +2,10 @@
 function hrl_parameter_tuning()
     close all; clear; 
     max_parameter_search_attempts=3; %10
-    max_parameter_depth=3; %10
+    max_parameter_depth=5; %10
     max_runs=5; %100
-    trial_total = 30; %1000
-    time_length = 100; %500
+    trial_total = 200; %1000
+    time_length = 500; %500
     best_time=4; %4
     gridsize=11;
     learn_options_mode = 0;
