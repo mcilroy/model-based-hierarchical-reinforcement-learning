@@ -1,6 +1,6 @@
 to do 
-	clean up code
-	model = do 50,000 iterations without a goal state reward to learn options
+	-clean up code
+	-model = do 50,000 iterations without a goal state reward to learn options
 	experiment - test depth and search attemps
 		for search_attempts=1:10
 			for depth=1:10
@@ -27,3 +27,13 @@ to do
 			
 		
 			
+search 0:10
+	depth 0:10
+
+when depth = 0 no lookahead
+when search = 0 no lookahead
+
+0;0 0;1 0;2
+1;0 1;1 1;2
+2;0 2;1 2;2
+

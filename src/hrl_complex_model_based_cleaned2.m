@@ -2,7 +2,7 @@
 function hrl()
     %% parameter declarations
     close all; clear; gridsize = 11; discount = 0.9; alpha_value = 0.1; alpha_action = 0.01; temp = 10; 
-    max_depth=3; search_attempts=3; time_length=500; trial_total = 25;
+    max_depth=1; search_attempts=1; time_length=50000; trial_total = 1; build_mode = 1;
     %% setup world
     blocks = [1 6; 2 6; 4 6; 5 6; 6 1; 6 3; 6 4; 6 5; 6 6; 7 6; 7 7; 7 8; 7 10; 7 11; 8 6; 9 6; 11 6;];
     for i=1:gridsize;
@@ -35,7 +35,11 @@ function hrl()
         options_taken = 0;
         for t=1:time_length;
             %% select from a list of possible actions given the current option context
-            a_idx = get_model_based_a(options, option_idx, temp, s, alpha, grid, max_depth, search_attempts); % if option==1 then action = 1:12, if option >=2 then option = 1:4    
+            if build_mode == 0;
+                a_idx = get_model_based_a(options, option_idx, temp, s, alpha, grid, max_depth, search_attempts); % if option==1 then action = 1:12, if option >=2 then option = 1:4    
+            else
+                a_idx = get_next_action(options, options(option_idx), temp, s_init, alpha);
+            end
             if a_idx >4 % if selected a new option (non-primitive)
                 %% reset option
                 o_idx = a_idx;
@@ -44,7 +48,11 @@ function hrl()
                 s_init = s;
                 cum_reward = 0;
                 %% take a primitive action from the option's W values
-                a_idx = get_model_based_a(options, option_idx, temp, s, alpha, grid, max_depth, search_attempts); % option = not root, so action = 1:4
+                if build_mode ==0;
+                    a_idx = get_model_based_a(options, option_idx, temp, s, alpha, grid, max_depth, search_attempts); % option = not root, so action = 1:4
+                else
+                    a_idx = get_next_action(options, options(option_idx), temp, s_init, alpha);
+                end
             end
             action = create_a(a_idx);
             next_state = transition(grid, s, action);
@@ -54,7 +62,9 @@ function hrl()
                 tot_steps = 1;
                 s_init = s;
                 %% update the root's option W and V matrixes
-                [cum_reward, options] = update_option_values(s,s_init,cum_reward,discount,tot_steps,@reward,action,options,option_idx,next_state,action.idx,alpha_value,alpha_action);
+                if build_mode == 0;
+                    [cum_reward, options] = update_option_values(s,s_init,cum_reward,discount,tot_steps,@reward,action,options,option_idx,next_state,action.idx,alpha_value,alpha_action);
+                end
                 options_taken = options_taken + 1;
             else
                 %% update the current option's W and V matrixes
@@ -62,7 +72,9 @@ function hrl()
                 if is_sub_goal(options(option_idx), next_state) == 1; % if subgoal reached
                     %% update the root option's W and V concerning taking a specific option
                     option_idx = 1;
-                    [cum_reward, options] = update_option_values(s,s_init,cum_reward,discount,tot_steps,@reward,action,options,option_idx,next_state,o_idx,alpha_value,alpha_action);  
+                    if build_mode == 0;
+                        [cum_reward, options] = update_option_values(s,s_init,cum_reward,discount,tot_steps,@reward,action,options,option_idx,next_state,o_idx,alpha_value,alpha_action);  
+                    end
                     cum_reward = 0;
                     tot_steps = 0; % set to 0 because you increase it by 1 in the next line
                     s_init = next_state;
@@ -74,9 +86,16 @@ function hrl()
             end     
             s = next_state; 
             move = move +1;
-            if end_state(grid,s)
-                break;
-            end  
+            if build_mode==0;
+                if end_state(grid,s)
+                    break;
+                end  
+            end
+            if build_mode==1;
+                if mod(t,5000) == 0;
+                    t
+                end
+            end
         end
         moves(1,trial) = move;
         options_taken_array(1,trial) = options_taken;
@@ -87,6 +106,9 @@ function hrl()
     display_grid(grid, ind)
     plot(moves);
     plot(options_taken_array);
+    if build_mode == 1;
+        save('../data/option_building.mat', 'options');
+    end
 end
 
 function [cum_reward, options] = update_option_values(s, s_init, cum_reward ,discount, tot_steps, reward_function, action, options, option_idx, next_state, a_idx, alpha_value, alpha_action)
