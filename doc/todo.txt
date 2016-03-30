@@ -1,0 +1,29 @@
+to do 
+	clean up code
+	model = do 50,000 iterations without a goal state reward to learn options
+	experiment - test depth and search attemps
+		for search_attempts=1:10
+			for depth=1:10
+				for run=1:25
+					load weights from model
+					ts = queue(10);
+					for trial=1:1000
+						for t=1:500
+							for s=1:search_attempts
+								for d=1:depth
+									if goal_reached then break
+						ts.dequeue(1)
+						ts.enqueue(t)
+						if the median of the last ts == the fewest possible t to reach the goal then 
+							break (4 when using options, 16 when using only primitives)
+					median_t = median(ts)
+					values.append(median_t)
+				avg_value(search_attempts,depth).values = average(values)
+				avg_value(search_attempts,depth).depth = depth
+				avg_value(search_attempts,depth).search_attempts = search_attempts
+		save(avg_value)
+	
+		
+			
+		
+			
