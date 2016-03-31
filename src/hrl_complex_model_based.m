@@ -1,7 +1,7 @@
-%% HRL - simple
-function hrl()
+%% HRL - model based
+function [options, moves, options_taken_array] = hrl_complex_model_based(max_depth, max_search_attempts, time_length, trial_total)
     %% parameter declarations
-    close all; clear; gridsize = 11; discount = 0.9; alpha_value = 0.1; alpha_action = 0.01; temp = 10;
+    gridsize = 11; discount = 0.9; alpha_value = 0.1; alpha_action = 0.01; temp = 10;
     %% setup world
     blocks = [1 6; 2 6; 4 6; 5 6; 6 1; 6 3; 6 4; 6 5; 6 6; 7 6; 7 7; 7 8; 7 10; 7 11; 8 6; 9 6; 11 6;];
     for i=1:gridsize;
@@ -20,8 +20,8 @@ function hrl()
     grid(s.i,s.j).end = 1;
     
     %% create options
-    options = create_options(gridsize);
-    trial_total = 1000;
+    %options = create_options(gridsize);
+    load('../data/option_building.mat');
     moves = zeros(1,trial_total);
     options_taken_array = zeros(1,trial_total);
     for trial=1:trial_total
@@ -33,9 +33,9 @@ function hrl()
         alpha = exp(-trial/(trial_total*.2));
         move = 0;
         options_taken = 0;
-        for t=1:500;
+        for t=1:time_length;
             %% select from a list of possible actions given the current option context
-            a_idx = get_model_based_a(options, option_idx, temp, s, alpha, grid); % if option==1 then action = 1:12, if option >=2 then option = 1:4    
+            a_idx = get_model_based_a(options, option_idx, temp, s, alpha, grid, max_depth, max_search_attempts); % if option==1 then action = 1:12, if option >=2 then option = 1:4    
             if a_idx >4 % if selected a new option (non-primitive)
                 %% reset option
                 o_idx = a_idx;
@@ -44,7 +44,7 @@ function hrl()
                 s_init = s;
                 cum_reward = 0;
                 %% take a primitive action from the option's W values
-                a_idx = get_model_based_a(options, option_idx, temp, s, alpha, grid); % option = not root, so action = 1:4
+                a_idx = get_model_based_a(options, option_idx, temp, s, alpha, grid, max_depth, max_search_attempts); % option = not root, so action = 1:4
             end
             action = create_a(a_idx);
             next_state = transition(grid, s, action);
@@ -91,26 +91,25 @@ function hrl()
         moves(1,trial) = move;
         options_taken_array(1,trial) = options_taken;
     end
-    display_grid(grid, options(1).V)
-    display_grid(grid, options(2).V)
-    [value, ind] = max(options(1).W,[],3);
-    display_grid(grid, ind)
-    plot(moves);
-    plot(options_taken_array);
+    %display_grid(grid, options(1).V)
+    %display_grid(grid, options(2).V)
+    %[value, ind] = max(options(1).W,[],3);
+    %display_grid(grid, ind)
+    %plot(options_taken_array);
+    %plot(moves);
 end
 
 %% select the best action after looking ahead and skipping primitive actions inside options
 % if option==root then lookahead on all options, but skip primitives steps and stop at end goal
 % if option==non-root do only primitives of the current option and stop when subgoal reached
-function best_a_idx = get_model_based_a(options, option_idx, temp, s_init, alpha, grid)
+function best_a_idx = get_model_based_a(options, option_idx, temp, s_init, alpha, grid, max_depth, max_search_attempts)
     %best_a_idx = get_next_action(options, options(option_idx), temp, s_init, alpha);
     %return;
     if option_idx == 1; % root
-        max_depth = 10;
         best_a_idx = get_next_action(options, options(option_idx), temp, s_init, alpha);
         a_idx = best_a_idx;
         best_V = 0; % assuming no negative rewards
-        for i=1:10
+        for i=1:max_search_attempts
             depth = 1;
             action_ids = zeros(1,max_depth);
             s = s_init;
@@ -145,11 +144,10 @@ function best_a_idx = get_model_based_a(options, option_idx, temp, s_init, alpha
             end
         end
     else
-        max_depth = 10;
         best_a_idx = get_next_action(options, options(option_idx), temp, s_init, alpha);
         a_idx = best_a_idx;
         best_V = 0; % assuming no negative rewards
-        for i=1:10
+        for i=1:max_search_attempts
             depth = 1;
             action_ids = zeros(1,max_depth);
             s = s_init;

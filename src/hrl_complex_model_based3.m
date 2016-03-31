@@ -1,5 +1,14 @@
-%% HRL - model based
+%% HRL - model based - possibly doesn't work
 function [moves, options_taken_array, options] = hrl_complex_model_based3(options, search_attempts, max_depth, time_length, trial_total, build_mode, gridsize)
+    
+%     search_attempts = 5;
+%     max_depth = 5;
+%     time_length = 550;
+%     trial_total = 350;
+%     build_mode = 0;
+%     gridsize = 11;
+%     options = create_options(gridsize);
+    
     %% parameter declarations
     discount = 0.9; alpha_value = 0.1; alpha_action = 0.01; temp = 10; 
     %% setup world

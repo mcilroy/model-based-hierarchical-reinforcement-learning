@@ -1,7 +1,7 @@
 function analyze_data()
     clear; close all;
-    load('../data/lookahead_avg_values.mat');
-    load('../data/modelfree_avg_values.mat');
+    load('../data/lookahead_avg_values2.mat');
+    load('../data/modelfree_avg_values2.mat');
     figure; hold on;
     legend_vals = cell(1, size(avg_moves,1)*size(avg_moves,2));
     counter = 1;
