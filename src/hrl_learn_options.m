@@ -1,8 +1,8 @@
-%% HRL - model based
-function hrl()
+%% HRL - model based - used to build W and V values for each option
+function hrl_learn_options()
     %% parameter declarations
     close all; clear; gridsize = 11; discount = 0.9; alpha_value = 0.1; alpha_action = 0.01; temp = 10; 
-    max_depth=1; search_attempts=1; time_length=50000; trial_total = 1; build_mode = 1;
+    max_depth=0; search_attempts=0; time_length=50000; trial_total = 1; learn_options_mode = 1;
     %% setup world
     blocks = [1 6; 2 6; 4 6; 5 6; 6 1; 6 3; 6 4; 6 5; 6 6; 7 6; 7 7; 7 8; 7 10; 7 11; 8 6; 9 6; 11 6;];
     for i=1:gridsize;
@@ -35,7 +35,7 @@ function hrl()
         options_taken = 0;
         for t=1:time_length;
             %% select from a list of possible actions given the current option context
-            if build_mode == 0;
+            if learn_options_mode == 0;
                 a_idx = get_model_based_a(options, option_idx, temp, s, alpha, grid, max_depth, search_attempts); % if option==1 then action = 1:12, if option >=2 then option = 1:4    
             else
                 a_idx = get_next_action(options, options(option_idx), temp, s_init, alpha);
@@ -48,7 +48,7 @@ function hrl()
                 s_init = s;
                 cum_reward = 0;
                 %% take a primitive action from the option's W values
-                if build_mode ==0;
+                if learn_options_mode ==0;
                     a_idx = get_model_based_a(options, option_idx, temp, s, alpha, grid, max_depth, search_attempts); % option = not root, so action = 1:4
                 else
                     a_idx = get_next_action(options, options(option_idx), temp, s_init, alpha);
@@ -62,7 +62,7 @@ function hrl()
                 tot_steps = 1;
                 s_init = s;
                 %% update the root's option W and V matrixes
-                if build_mode == 0;
+                if learn_options_mode == 0;
                     [cum_reward, options] = update_option_values(s,s_init,cum_reward,discount,tot_steps,@reward,action,options,option_idx,next_state,action.idx,alpha_value,alpha_action);
                 end
                 options_taken = options_taken + 1;
@@ -72,7 +72,7 @@ function hrl()
                 if is_sub_goal(options(option_idx), next_state) == 1; % if subgoal reached
                     %% update the root option's W and V concerning taking a specific option
                     option_idx = 1;
-                    if build_mode == 0;
+                    if learn_options_mode == 0;
                         [cum_reward, options] = update_option_values(s,s_init,cum_reward,discount,tot_steps,@reward,action,options,option_idx,next_state,o_idx,alpha_value,alpha_action);  
                     end
                     cum_reward = 0;
@@ -86,12 +86,12 @@ function hrl()
             end     
             s = next_state; 
             move = move +1;
-            if build_mode==0;
+            if learn_options_mode==0;
                 if end_state(grid,s)
                     break;
                 end  
             end
-            if build_mode==1;
+            if learn_options_mode==1;
                 if mod(t,5000) == 0;
                     t
                 end
@@ -106,7 +106,7 @@ function hrl()
     display_grid(grid, ind)
     plot(moves);
     plot(options_taken_array);
-    if build_mode == 1;
+    if learn_options_mode == 1;
         save('../data/option_building.mat', 'options');
     end
 end

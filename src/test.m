@@ -1,5 +1,5 @@
 function blah()
-
+    tic
     for i=1:10;
     end
     i;
@@ -19,6 +19,7 @@ function blah()
         blah{1,i} = sprintf('%d',i);
     end
     legend(blah);
+    toc
 end
 
 function options = do(options,id,val)
