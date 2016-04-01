@@ -18,7 +18,6 @@ function hrl_parameter_tuning()
             run_options_taken_array = zeros(1,trial_total);
             run_options = create_options(gridsize);
             for run=1:max_runs
-                %load('../data/option_building.mat');
                 [options, moves, options_taken_array] = hrl_complex_model_based(depth, search_attempt, time_length, trial_total);
                 run_moves(1,:) = run_moves(1,:) + moves(1,:);
                 run_options_taken_array(1,:) = run_options_taken_array(1,:) + options_taken_array(1,:);
@@ -44,8 +43,9 @@ function hrl_parameter_tuning()
     run_moves = zeros(1,trial_total);
     run_options_taken_array = zeros(1,trial_total);
     run_options = create_options(gridsize);
+    depth=0;
+    search_attempt=0;
     for run=1:max_runs
-        %load('../data/option_building.mat');
         [options, moves, options_taken_array] = hrl_complex_model_based(depth, search_attempt, time_length, trial_total);
         run_moves(1,:) = run_moves(1,:) + moves(1,:);
         run_options_taken_array(1,:) = run_options_taken_array(1,:) + options_taken_array(1,:);
@@ -53,6 +53,7 @@ function hrl_parameter_tuning()
             run_options(i).W = run_options(i).W + options(i).W;
             run_options(i).V = run_options(i).V + options(i).V;
         end
+        sprintf('run:%d',run)
     end
     run_moves(1,:) = run_moves(1,:) / max_runs;
     modelfree_avg_moves(:) = run_moves(1,:);

@@ -1,7 +1,11 @@
 %% HRL - model based
 function [options, moves, options_taken_array] = hrl_complex_model_based(max_depth, max_search_attempts, time_length, trial_total)
+%     max_depth = 6;
+%     max_search_attempts = 6;
+%     time_length = 550;
+%     trial_total = 100;
     %% parameter declarations
-    gridsize = 11; discount = 0.9; alpha_value = 0.1; alpha_action = 0.01; temp = 10;
+    gridsize = 11; discount = 0.9; alpha_value = 0.1; alpha_action = 0.01; temp = 10; explore_mode = 0;
     %% setup world
     blocks = [1 6; 2 6; 4 6; 5 6; 6 1; 6 3; 6 4; 6 5; 6 6; 7 6; 7 7; 7 8; 7 10; 7 11; 8 6; 9 6; 11 6;];
     for i=1:gridsize;
@@ -25,12 +29,19 @@ function [options, moves, options_taken_array] = hrl_complex_model_based(max_dep
     moves = zeros(1,trial_total);
     options_taken_array = zeros(1,trial_total);
     for trial=1:trial_total
+        if trial == 50;
+            blah =1;
+        end
         s.i = 1; s.j = 11; grid(s.i,s.j).start = s; % start state of agent
         option_idx = 1; % root option
         tot_steps = 1;
         s_init = s;
         cum_reward = 0;
-        alpha = exp(-trial/(trial_total*.2));
+        if explore_mode == 1;
+            alpha = exp(-trial/(trial_total*.2));
+        else
+            alpha = 0;
+        end
         move = 0;
         options_taken = 0;
         for t=1:time_length;
