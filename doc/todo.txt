@@ -1,6 +1,27 @@
 to do 
 	-clean up code
 	-model = do 50,000 iterations without a goal state reward to learn options
+	fix depth not working
+	figure of results of # of searchs, including model free
+	figure of results of # of depths, including model free
+	figure of dynamic programming for discussion
+	results
+	discussion
+		discuss dynamic programming
+		discuss why using V was wrong
+		discuss why using more searches works better
+		results show that training time increases, but number of iterations vastly decreases. Trade off. With larger CPU resources, model-based is preferable.
+	conclusion
+		future work
+	
+
+
+
+
+
+
+
+########################################
 	experiment - test depth and search attemps
 		for search_attempts=1:10
 			for depth=1:10
@@ -37,3 +58,7 @@ when search = 0 no lookahead
 1;0 1;1 1;2
 2;0 2;1 2;2
 
+using V function with depth can lead to problems
+	example: moving to the bottom rooms then the goal takes longer but treated as the same as moving through the top rooms
+	solution: use discounted cumulative reward. You have an estimate, in our case we just assume the cumulative reward. But can be added to the model.
+	then the the two paths will not be equal.

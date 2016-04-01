@@ -1,20 +1,78 @@
 \section{Introduction}
-Reinforcement learning has recently shown strong results in blah blah...~\cite{mnih2015human}.
-\subsection{Hierarchical Reinforcement Learning}
-Hierarchical reinforcement learning has done other things...
+Recently, there has been a surge of interest with regards to reinforcement learning in the machine learning community and demonstrated significant progress on several tasks, most notably on games~\cite{mnih2015human}~\cite{silver2016mastering}. The key to their success was combining deep convolutional neural networks~\cite{krizhevsky2012imagenet} with traditional reinforcement learning~\cite{sutton1998reinforcement}.
+
+\subsection{Reinforcement Learning}
+Reinforcement learning (RL) is machine learning technique for an agent to learn through reward and punishment. RL is inspired by how humans learn. One way humans learn to map actions to stimulus is through receiving pleasure and pain and associating those actions with the resulting positive/negative feedback. The outcome is we tend to perform actions that result in positive stimuli and supress actions that result in negative stimuli. The same approach is taken with RL. In RL, the agent will perform actions that result in the most reward. 
+
+Over the years, researchers have formalized RL into a set of equations that can be better understood and applied to real problems. At its core, RL is typically a markov decision process model where the model has a set of states \textit{s}, a set of actions \textit{a}, a transition function \textit{T(s,a)}, a reward function \textit{R(s,a)}, and a way for the agent to observe the environment.
+
+There are many implementations of RL which can broadly be divided into two categories, model-based and model-free, then within these categories there are futher sub-divisions such as on-policy or off-policy, partially observable etc. The choice of which depends on the goals of the problem and how knowledgable the agent is of its environment.
+
 \subsubsection{Model-based}
-Model based ...
+Model-based RL is where the agent has complete knowledge of the transition function and reward function. Essentially has a map of the world for which it can learn the best actions. RL methods such as policy iteration take advantage of this fact to perform dynamic programming to learn the optimal solution. The advantage of this approach is there is a guaranteed solution, the downside is that not every problem comes with knowledge of the transition and reward functions.
+
+\subsubsection{Model-free}
+Model-free RL lacks the complete knowledge of the transition and reward function. Therefore, the model-free models must learn the best actions to take given the state by sampling the environments states by performing actions. 
+\subsubsubsection{Temporal Difference Learning}
+Temporal difference (TD) learning is a popular model-free algorithm. Each state and action pair has a value associated with it. The agent will take the action with the maximum value. To learn, when an agent takes an action, the agent calculates the difference between the current estimate of the states value and the reward from the action plus the estimated reward at the next state. This delta value is either positive or negative signifying that the value of the current state should be higher or lower respectively. The values of each state are then adjusted accordingly. The full equation is presented below: 
+
+\subsubsection{Actor Critic Model}
+The model we use in our paper is the actor critic model. This particular model separates the decision making process from the value function. Each state has a set of weights for each action and a value. When an action is made and the delta is calculated, both the action weights and the state's value weight are updated. Figure \ref{actorcritic} demonstrates an example of the Actor Critic Model.
+
+\subsection{The Scaling Problem}
+The problem with RL is that as the number of actions and states increases, the training time also increases at an accelerating rate \cite{botvinick2009hierarchically}. For simple problems, RL can work well but for more complex problems involving millions of states and hundreds of actions, the problem can quickly become unmanageable. There have been different attempts to address this problem. Some researchers have abstracted the states into similar groupings~\cite{li2006towards}, or others have proposed temporally abstract actions~\cite{sutton1999between}. These actions are essentially a separate policy that is followed until a sub-goal state is reached and which point the original higher-level policy resumes control. Temporally abstract actions form the basis of Hierarchical Reinforcement Learning (HRL).
+
+\subsection{Hierarchical Reinforcement Learning}
+HRL has several implementations, the implementation we use is from the paper in Botvinick~\cite{botvinick2009hierarchically}. It is an actor-critic model. In his implementation temporally abstract actions are known as options. Actions can thus be primitive actions following the high level policy or options following their own policy. When an option reaches one of its subgoals it returns control back to the original root policy. To learn an options policy, the agent receives pseudo-reward for reaching a sub-goal. Pseudo reward is separate from external reward. The agent still receives reward when reaching reward states. Figure~\ref{hrl} demontrates an example of an agent moving using options.
+
+The benefit of HRL is two-fold. The first benefit is that HRL reduces the size of the search space. Many successive branches of the search tree are abstracted to a single branch by using options. The result of choosing an option skips primitive actions in the tree. The second benefit is that HRL has fewer parameters to tune resulting in a less complex model. A less complex model is easier to train and understand. The use of two options that are each composed of four actions results in only two paramters being tuned at the root level versus eight parameters without using options.
 
 \section{Related Work}
-RL, other HRL and model based.
+Sutton introduced HRL and demonstrated an implementation~cite{sutton1999between}. Botvinick applied HRL and discussed the neural basis of humans performing HRL~\cite{botvinick2009hierarchically}. However, he did not perform model-based learning. Diuk et. al. also analyzed potential neural correlates to certain assumptions in HRL~\cite{diuk2013divide} and analyzed how options could be automatically created. We use the options created by Botvinik's model and our work is more to demonstrate model-based HRL than auto-generation of options.
 
 \section{Experimental Design}
-Talk about the work being done here.
+We implemented the model as described in Botvinick's previous work~\cite{botvinick2009hierarchically}. It is an actor-critic reinforcement model. The agent is allowed to make at most 550 actions before termination unless it reaches the goal state at which point the trial is terminated early. I trained the agent over 350 trials. The agent make action selections probabilistically and can select primitive actions or options therefore we treat all actions as options.
+
+%$P(a) = \frac{ e^{W(s_t,a)/\tau}}{\sum{a' \in A} e^{W(s_t,a')/\tau}}$
+$P(o) = \frac{ e^{W_{o_{ctrl}}(s_t,o)/\tau}}{\sum{o' \in O} e^{W_{o_{ctrl}}(s_t,o')/\tau}}$
+
+where $o$ is the option/primitive action, $s_{t}$ is the current state and $\tau$ is the temperature variable controlling exploration. 
+
+The prediction error is calculated as the reward plus the value of the next state minus the current state's value. 
+
+$\delta = r_{cum} + \gamma^{t_{tot}}V_{o_{ctrl}}(s_{t+1}) - V_{o_{ctrl}}(s_{init})$
+
+where $r_{cum}$ is the cumulative reward attained from followed the option's policy, $o_{ctrl}$ is the controlling option. $s_{t+1}$ represents the terminating state of the option. In the case of a primitive action, the controlling option is the root option and the equation reduces to 
+
+$\delta = r_{t+1} + \gamma V(s_{t+1}) - V(s_{t})$
+
+In Botvinick's implementation, they chose to disallow options from choosing options. We followed their recommendation but both our implementation and Botvinick's model is compatible with options choosing options.
+
+The cumulative reward is calculated by summing over all the reward received from the start of the option until the termination.
+
+$r_{cum} = \sum_{i=1}^{t_{tot}} \gamma^{i-1}r_{t_{init}+i}$
+
+Finally, the strength of the weights for the actions and the state values are updated.
+
+$V_{o_{ctrl}}(S_{t_{init}}) \Longleftarrow V_{o_{ctrl}}(S_{t_{init}}) + \alpha_{C}\delta$ \\
+$W_{o_{ctrl}}(S_{t_{init}},O) \Longleftarrow V_{o_{ctrl}}(S_{t_{init}},O) + \alpha_{A}\delta$ 
+
+where $\alpha_{C}$ and $\alpha_{A}$ are learning rates set to 0.01 and 0.1 respectively.
+
+We follow Bovinick's implemenation and pre-train the model's options. We train the agent for 50,000 trials without a goal state or reward except the pseudo reward for each option. The pre-training allows the agent to learn the different options optimal paths so they can be useful when the agent begins to learn.
+
+\section{The environment}
+The environment is a a set of four room connected by passages. The agent can move left right up or down. There is a single start state and a final goal state in another room. The agent receives 100 reward if it reaches the goal state. When an agent reaches a sub-goal of an option the agent will receive 100 pseudo-reward.
+
 
 \section{Results}
 Compare with old results from the paper.
 
 \section{Discussion}
 Explain the reasoning behind the results. Dig into interesting findings here.
+Discuss policy iteration.
+Why not use policy iteration if you know the T and R functions? 
+	We dont use it because our T and R is assumed, but remains unknown. We could easily create a system that predicts the likely next state without actually using a transition function.  it out and say that yes we assume our transition function but what we could do in the future is have the transition predicted or learned itself
+	
 \section{Conclusion}
 Future work
