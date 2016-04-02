@@ -1,7 +1,7 @@
 function analyze_data()
     clear; close all;
-    load('../data/lookahead_avg_values2.mat');
-    load('../data/modelfree_avg_values2.mat');
+    load('../data/lookahead_avg_values_fixed_depth.mat');
+    load('../data/modelfree_avg_values_fixed_depth.mat');
     %avg_moves = avg_options_taken_array;
     figure; hold on;
     legend_vals = cell(1, size(avg_moves, 1));
@@ -17,8 +17,8 @@ function analyze_data()
     legend_vals = cell(1, size(avg_moves, 2));
     counter = 1;
     for depth=1:size(avg_moves, 2);
-        plot(reshape(avg_moves(6, depth, :), 1, []));
-        legend_vals{1,counter} = sprintf('%d %d', 6, depth);
+        plot(reshape(avg_moves(5, depth, :), 1, []));
+        legend_vals{1,counter} = sprintf('%d %d', 5, depth);
         counter=counter+1;
     end
     legend(legend_vals(1,:));

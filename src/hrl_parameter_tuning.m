@@ -53,7 +53,7 @@ function hrl_parameter_tuning()
             run_options(i).W = run_options(i).W + options(i).W;
             run_options(i).V = run_options(i).V + options(i).V;
         end
-        sprintf('run:%d',run)
+        sprintf('seach:0 depth:0 run:%d',run)
     end
     run_moves(1,:) = run_moves(1,:) / max_runs;
     modelfree_avg_moves(:) = run_moves(1,:);
@@ -65,7 +65,7 @@ function hrl_parameter_tuning()
     end
     modelfree_avg_run_options(1).run_option = run_options;
     
-    save('../data/lookahead_avg_values2.mat', 'avg_moves', 'avg_options_taken_array', 'avg_run_options');
-    save('../data/modelfree_avg_values2.mat', 'modelfree_avg_moves', 'modelfree_avg_options_taken_array', 'modelfree_avg_run_options');
+    save('../data/lookahead_avg_values_fixed_depth2.mat', 'avg_moves', 'avg_options_taken_array', 'avg_run_options');
+    save('../data/modelfree_avg_values_fixed_depth2.mat', 'modelfree_avg_moves', 'modelfree_avg_options_taken_array', 'modelfree_avg_run_options');
     toc
 end

@@ -1,9 +1,9 @@
 %% HRL - model based
 function [options, moves, options_taken_array] = hrl_complex_model_based(max_depth, max_search_attempts, time_length, trial_total)
-%     max_depth = 6;
-%     max_search_attempts = 6;
-%     time_length = 550;
-%     trial_total = 100;
+%      max_depth = 20;
+%      max_search_attempts = 5;
+%      time_length = 550;
+%      trial_total = 100;
     %% parameter declarations
     gridsize = 11; discount = 0.9; alpha_value = 0.1; alpha_action = 0.01; temp = 10; explore_mode = 0;
     %% setup world
@@ -46,7 +46,7 @@ function [options, moves, options_taken_array] = hrl_complex_model_based(max_dep
         options_taken = 0;
         for t=1:time_length;
             %% select from a list of possible actions given the current option context
-            a_idx = get_model_based_a(options, option_idx, temp, s, alpha, grid, max_depth, max_search_attempts); % if option==1 then action = 1:12, if option >=2 then option = 1:4    
+            a_idx = get_model_based_a(options, option_idx, temp, s, alpha, discount, grid, max_depth, max_search_attempts); % if option==1 then action = 1:12, if option >=2 then option = 1:4    
             if a_idx >4 % if selected a new option (non-primitive)
                 %% reset option
                 o_idx = a_idx;
@@ -55,7 +55,7 @@ function [options, moves, options_taken_array] = hrl_complex_model_based(max_dep
                 s_init = s;
                 cum_reward = 0;
                 %% take a primitive action from the option's W values
-                a_idx = get_model_based_a(options, option_idx, temp, s, alpha, grid, max_depth, max_search_attempts); % option = not root, so action = 1:4
+                a_idx = get_model_based_a(options, option_idx, temp, s, alpha, discount, grid, max_depth, max_search_attempts); % option = not root, so action = 1:4
             end
             action = create_a(a_idx);
             next_state = transition(grid, s, action);
@@ -113,7 +113,7 @@ end
 %% select the best action after looking ahead and skipping primitive actions inside options
 % if option==root then lookahead on all options, but skip primitives steps and stop at end goal
 % if option==non-root do only primitives of the current option and stop when subgoal reached
-function best_a_idx = get_model_based_a(options, option_idx, temp, s_init, alpha, grid, max_depth, max_search_attempts)
+function best_a_idx = get_model_based_a(options, option_idx, temp, s_init, alpha, discount, grid, max_depth, max_search_attempts)
     %best_a_idx = get_next_action(options, options(option_idx), temp, s_init, alpha);
     %return;
     if option_idx == 1; % root
@@ -124,7 +124,6 @@ function best_a_idx = get_model_based_a(options, option_idx, temp, s_init, alpha
             depth = 1;
             action_ids = zeros(1,max_depth);
             s = s_init;
-            reward = 0;
             while depth <= max_depth
                 a_idx = get_next_action(options, options(option_idx), temp, s, alpha); % action= 1:12
                 if a_idx > 4 % new option selected
@@ -136,21 +135,21 @@ function best_a_idx = get_model_based_a(options, option_idx, temp, s_init, alpha
                     next_state = transition(grid, s, action);
                 end
                 action_ids(1, depth) = a_idx;
-                depth = depth + 1;
                 if end_state(grid, next_state)
                     % if reached goal, return previous state's value because goal state
                     % does not have a V value.
-                    if options(option_idx).V(s.i,s.j) > best_V;
+                    if (discount^depth)*options(option_idx).V(s.i,s.j) > best_V;
                         best_V = options(option_idx).V(s.i,s.j);
                         best_a_idx = action_ids(1,1);
                     end
                     break;
                 else
-                    if options(option_idx).V(next_state.i, next_state.j) > best_V;
+                    if (discount^depth)*options(option_idx).V(next_state.i, next_state.j) > best_V;
                         best_V = options(option_idx).V(next_state.i,next_state.j);
                         best_a_idx = action_ids(1,1);
                     end
                 end
+                depth = depth + 1;
                 s = next_state;
             end
         end
@@ -167,21 +166,21 @@ function best_a_idx = get_model_based_a(options, option_idx, temp, s_init, alpha
                 action = create_a(a_idx);
                 next_state = transition(grid, s, action);
                 action_ids(1, depth) = a_idx;
-                depth = depth + 1;
                 if is_sub_goal(options(option_idx), next_state)
                     % if reached goal, return previous state's value because goal state
                     % does not have a V value.
-                    if options(option_idx).V(s.i,s.j) > best_V;
+                    if (discount^depth)*options(option_idx).V(s.i,s.j) > best_V;
                         best_V = options(option_idx).V(s.i,s.j);
                         best_a_idx = action_ids(1,1);
                     end
                     break;
                 else
-                    if options(option_idx).V(next_state.i, next_state.j) > best_V;
+                    if (discount^depth)*options(option_idx).V(next_state.i, next_state.j) > best_V;
                         best_V = options(option_idx).V(next_state.i,next_state.j);
                         best_a_idx = action_ids(1,1);
                     end
                 end
+                depth = depth + 1;
                 s = next_state;
             end
         end
