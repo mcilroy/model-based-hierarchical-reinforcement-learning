@@ -1,7 +1,7 @@
 %% HRL - model based
 function [options, moves, options_taken_array] = hrl_complex_model_based(max_depth, max_search_attempts, time_length, trial_total)
-%      max_depth = 20;
-%      max_search_attempts = 5;
+%      max_depth = 6;
+%      max_search_attempts = 6;
 %      time_length = 550;
 %      trial_total = 100;
     %% parameter declarations
@@ -29,9 +29,6 @@ function [options, moves, options_taken_array] = hrl_complex_model_based(max_dep
     moves = zeros(1,trial_total);
     options_taken_array = zeros(1,trial_total);
     for trial=1:trial_total
-        if trial == 50;
-            blah =1;
-        end
         s.i = 1; s.j = 11; grid(s.i,s.j).start = s; % start state of agent
         option_idx = 1; % root option
         tot_steps = 1;
@@ -65,21 +62,45 @@ function [options, moves, options_taken_array] = hrl_complex_model_based(max_dep
                 tot_steps = 1;
                 s_init = s;
                 %% update the root's option W and V matrixes
-                cum_reward = cum_reward + discount^(tot_steps-1)*reward(s, action);
+%                 if cum_reward +discount^(tot_steps-1)*reward(s, action) > 100
+%                     blah= 100;
+%                 end
+                
+                if end_state(grid, next_state)
+                    cum_reward = cum_reward + discount^(tot_steps-1)*0;
+                else
+                    cum_reward = cum_reward + discount^(tot_steps-1)*reward(s, action);
+                end
                 delta = cum_reward + discount^tot_steps * options(option_idx).V(next_state.i,next_state.j) - options(option_idx).V(s_init.i, s_init.j);
+%                 if options(option_idx).V(s_init.i, s_init.j) + alpha_value*delta > 100
+%                     blah = 100;
+%                 end
                 options(option_idx).V(s_init.i, s_init.j) = options(option_idx).V(s_init.i, s_init.j) + alpha_value*delta;
                 options(option_idx).W(s_init.i, s_init.j, action.idx) = options(option_idx).W(s_init.i,s_init.j, action.idx) + alpha_action*delta;
+                
                 options_taken = options_taken + 1;
             else
                 %% update the current option's W and V matrixes
-                pseudo = discount^(1-1)*pseudo_reward(s, action, options(option_idx));
+                if is_sub_goal(options(option_idx), next_state) == 1;
+                    pseudo = discount^(1-1)*0;
+                else
+                    pseudo = discount^(1-1)*pseudo_reward(s, action, options(option_idx));
+                end
+                
                 delta = pseudo + discount^1 * options(option_idx).V(next_state.i,next_state.j) - options(option_idx).V(s.i, s.j);
                 options(option_idx).V(s.i, s.j) = options(option_idx).V(s.i, s.j) + alpha_value*delta;
                 options(option_idx).W(s.i, s.j, action.idx) = options(option_idx).W(s.i,s.j, action.idx) + alpha_action*delta;
+                
                 if is_sub_goal(options(option_idx), next_state) == 1; % if subgoal reached
+                    %% set sub goal states pseudo reward because it doesn't get set normally
+                    options(option_idx).V(next_state.i, next_state.j) = pseudo_reward(s, action, options(option_idx));
                     %% update the root option's W and V concerning taking a specific option
                     option_idx = 1;
-                    cum_reward = cum_reward + discount^(tot_steps-1)*reward(s, action);
+                    if end_state(grid, next_state)
+                        cum_reward = cum_reward + discount^(tot_steps-1)*0;
+                    else
+                        cum_reward = cum_reward + discount^(tot_steps-1)*reward(s, action);
+                    end
                     delta = cum_reward + discount^tot_steps * options(option_idx).V(next_state.i,next_state.j) - options(option_idx).V(s_init.i, s_init.j);
                     options(option_idx).V(s_init.i, s_init.j) = options(option_idx).V(s_init.i, s_init.j) + alpha_value*delta;
                     options(option_idx).W(s_init.i, s_init.j, o_idx) = options(option_idx).W(s_init.i,s_init.j, o_idx) + alpha_action*delta;  
@@ -93,11 +114,13 @@ function [options, moves, options_taken_array] = hrl_complex_model_based(max_dep
                 end
                 tot_steps = tot_steps+1;
             end     
-            s = next_state; 
             move = move +1;
-            if end_state(grid,s)
+            if end_state(grid, next_state)
+                %% set end goal states reward because it doesn't get set normally
+                options(option_idx).V(next_state.i, next_state.j) = reward(s, action);
                 break;
             end  
+            s = next_state;
         end
         moves(1,trial) = move;
         options_taken_array(1,trial) = options_taken;
@@ -124,6 +147,7 @@ function best_a_idx = get_model_based_a(options, option_idx, temp, s_init, alpha
             depth = 1;
             action_ids = zeros(1,max_depth);
             s = s_init;
+            total_moves = 0;
             while depth <= max_depth
                 a_idx = get_next_action(options, options(option_idx), temp, s, alpha); % action= 1:12
                 if a_idx > 4 % new option selected
@@ -134,20 +158,14 @@ function best_a_idx = get_model_based_a(options, option_idx, temp, s_init, alpha
                     action = create_a(a_idx);
                     next_state = transition(grid, s, action);
                 end
+                total_moves = total_moves + norm([s.i;s.j]-[next_state.i;next_state.j],1);
                 action_ids(1, depth) = a_idx;
+                if (discount^total_moves)*options(option_idx).V(next_state.i, next_state.j) > best_V;
+                    best_V = (discount^total_moves)*options(option_idx).V(next_state.i, next_state.j);
+                    best_a_idx = action_ids(1,1);
+                end
                 if end_state(grid, next_state)
-                    % if reached goal, return previous state's value because goal state
-                    % does not have a V value.
-                    if (discount^depth)*options(option_idx).V(s.i,s.j) > best_V;
-                        best_V = options(option_idx).V(s.i,s.j);
-                        best_a_idx = action_ids(1,1);
-                    end
                     break;
-                else
-                    if (discount^depth)*options(option_idx).V(next_state.i, next_state.j) > best_V;
-                        best_V = options(option_idx).V(next_state.i,next_state.j);
-                        best_a_idx = action_ids(1,1);
-                    end
                 end
                 depth = depth + 1;
                 s = next_state;
@@ -161,24 +179,19 @@ function best_a_idx = get_model_based_a(options, option_idx, temp, s_init, alpha
             depth = 1;
             action_ids = zeros(1,max_depth);
             s = s_init;
+            total_moves = 0;
             while depth <= max_depth
                 a_idx = get_next_action(options, options(option_idx), temp, s, alpha); % action= 1:4
                 action = create_a(a_idx);
                 next_state = transition(grid, s, action);
+                total_moves = total_moves + 1; %always going to be primitive
                 action_ids(1, depth) = a_idx;
+                if (discount^total_moves)*options(option_idx).V(next_state.i, next_state.j) > best_V;
+                    best_V = (discount^total_moves)*options(option_idx).V(next_state.i, next_state.j);
+                    best_a_idx = action_ids(1,1);
+                end
                 if is_sub_goal(options(option_idx), next_state)
-                    % if reached goal, return previous state's value because goal state
-                    % does not have a V value.
-                    if (discount^depth)*options(option_idx).V(s.i,s.j) > best_V;
-                        best_V = options(option_idx).V(s.i,s.j);
-                        best_a_idx = action_ids(1,1);
-                    end
                     break;
-                else
-                    if (discount^depth)*options(option_idx).V(next_state.i, next_state.j) > best_V;
-                        best_V = options(option_idx).V(next_state.i,next_state.j);
-                        best_a_idx = action_ids(1,1);
-                    end
                 end
                 depth = depth + 1;
                 s = next_state;

@@ -20,6 +20,9 @@ function blah()
     end
     legend(blah);
     toc
+    X=[2;2];
+    Y=[1;4];
+    d=norm(X-Y,1)
 end
 
 function options = do(options,id,val)

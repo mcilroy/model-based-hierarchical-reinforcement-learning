@@ -5,7 +5,7 @@ function hrl_parameter_tuning()
     max_parameter_search_attempts=6; %10
     max_parameter_depth=6; %10
     max_runs=20; %100
-    trial_total = 350; %1000
+    trial_total = 200; %1000
     time_length = 550; %500
     best_time=4; %4
     gridsize=11;
@@ -65,7 +65,7 @@ function hrl_parameter_tuning()
     end
     modelfree_avg_run_options(1).run_option = run_options;
     
-    save('../data/lookahead_avg_values_fixed_depth2.mat', 'avg_moves', 'avg_options_taken_array', 'avg_run_options');
-    save('../data/modelfree_avg_values_fixed_depth2.mat', 'modelfree_avg_moves', 'modelfree_avg_options_taken_array', 'modelfree_avg_run_options');
+    save('../data/lookahead_avg_values_working_model.mat', 'avg_moves', 'avg_options_taken_array', 'avg_run_options');
+    save('../data/modelfree_avg_values_working_model.mat', 'modelfree_avg_moves', 'modelfree_avg_options_taken_array', 'modelfree_avg_run_options');
     toc
 end
