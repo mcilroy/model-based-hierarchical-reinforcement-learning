@@ -6,10 +6,10 @@ Reinforcement learning (RL) is a machine learning technique where an agent learn
 
 Over the years, researchers have formalized RL with equations designed to capture the essence of animal reinforcement learning. At its core, an RL model is typically a markov decision process where the model has a set of states \textbf{s}, a set of actions \textbf{a}, a transition function \textit{T(s,a)}, a reward function \textit{R(s,a)}, and a way for the agent to observe the environment.
 
-There are many implementations of RL which can broadly be divided into two categories, model-based and model-free, then within these categories there are futher sub-divisions such as on-policy or off-policy, fully observable or partially observable etc. The choice of which depends on the goals of the problem and how knowledgeable the agent is of its environment.
+There are many implementations of RL which can broadly be divided into two categories, model-based and model-free, then within these categories there are further sub-divisions such as on-policy or off-policy, fully observable or partially observable etc. The choice of which depends on the goals of the problem and how knowledgeable the agent is of its environment.
 
 \subsubsection{Model-based}
-Model-based RL is where the agent has complete knowledge of the transition function and reward function. Essentially, the agent has a map of the world for which it can learn the best actions. RL methods such as policy iteration take advantage of this fact by perform dynamic programming which is guaranteed to converge. The advantage of this approach is that there is a guaranteed solution, the downside is that not every problem comes with knowledge of the transition and reward functions.
+Model-based RL is where the agent has complete knowledge of the transition function and reward function. Essentially, the agent has a map of the world for which it can learn the best actions. RL methods such as policy iteration take advantage of this fact by perform dynamic programming which is guaranteed to converge. The advantage of this approach is that there is a guaranteed solution; the downside is that not every problem comes with knowledge of the transition and reward functions.
 
 \subsubsection{Model-free}
 Model-free RL models lack the knowledge of the environment's transition and reward functions. Therefore, model-free models must learn the best state-action pairs by sampling the environment's states. The sampling is performed by sometimes stochastic selection of actions.
@@ -63,9 +63,9 @@ The problem with RL is that as the number of actions and states increases, the t
 \subsection{Hierarchical Reinforcement Learning}
 HRL has several implementations, the implementation I use is taken from Botvinick's previous work~\cite{botvinick2009hierarchically}. It is an actor-critic model. In his implementation, temporally abstract actions are known as options. Actions can thus be either primitive actions or options following their own policy. When an option reaches one of its sub-goals it returns control back to the original root policy. 
 
-To learn an option's policy, the agent receives a pseudo-reward for reaching a sub-goal. Pseudo rewards are separate from external environmental rewards. Peudo-rewards allow the agent to learn the best way possible to reach their options terminating state i.e. sub-goal, regardless of the amount of external reward.
+To learn an option's policy, the agent receives a pseudo-reward for reaching a sub-goal. Pseudo rewards are separate from external environmental rewards. Pseudo-rewards allow the agent to learn the best way possible to reach their options terminating state i.e. sub-goal, regardless of the amount of external reward.
 
-When an option terminates at state $s$, the control of the agent is returned to the higher order root option. The initial root option's policy is updated with the cumulative external reward for selecting option $o$ at the initial state $s_{init}$. $s_{init}$ represents the state at which the option $o$ was first selected. Figure~\ref{fig:state-transitions} demontrates an example of an agent moving using options.
+When an option terminates at state $s$, the control of the agent is returned to the higher order root option. The initial root option's policy is updated with the cumulative external reward for selecting option $o$ at the initial state $s_{init}$. $s_{init}$ represents the state at which the option $o$ was first selected. Figure~\ref{fig:state-transitions} demonstrates an example of an agent moving using options.
 
 \begin{figure}[h]
 \centering
@@ -74,7 +74,7 @@ When an option terminates at state $s$, the control of the agent is returned to 
 \label{fig:state-transitions}
 \end{figure}
 
-The benefit of HRL is two-fold. The first benefit is that HRL reduces the size of the search space. Many successive branches of the search tree are abstracted to a single branch by using options. The result of choosing an option skips primitive actions in the tree. The second benefit is that HRL has fewer parameters to tune resulting in a less complex model. A less complex model is easier to train and understand. For example, performing two sucessive options (each composed of four actions) results in only two parameters being tuned at the root level versus peforming eight successive primitive actions which each require tuning.
+The benefit of HRL is two-fold. The first benefit is that HRL reduces the size of the search space. Many successive branches of the search tree are abstracted to a single branch by using options. The result of choosing an option skips primitive actions in the tree. The second benefit is that HRL has fewer parameters to tune resulting in a less complex model. A less complex model is easier to train and understand. For example, performing two successive options (each composed of four actions) results in only two parameters being tuned at the root level versus performing eight successive primitive actions which each require tuning.
 
 \section{Related Work}
 Sutton introduced HRL and demonstrated a working implementation in his book~\cite{sutton1999between}. Botvinick applied HRL and discussed the neural basis of humans performing HRL~\cite{botvinick2009hierarchically}. However, he did not perform model-based learning. Diuk et. al. also analyzed potential neural correlates to certain assumptions in HRL~\cite{diuk2013divide} and analyzed how options could be automatically created. I do not automatically generate my own options as it remains an open problem and elect to use Botvinick's options to compare my model with his.
@@ -107,7 +107,7 @@ Finally, the strength of the weights for the actions and the state values are up
 
 where $\alpha_{C}$ and $\alpha_{A}$ are learning rates set to 0.01 and 0.1 respectively.
 
-We follow Bovinick's implemenation and pre-train the model's options. I train the agent for 50,000 trials without a goal state or reward except the pseudo reward for each option. The pre-training allows the agent to learn the different options optimal paths so they can be useful when the agent begins to learn the actual goal.
+We follow Bovinick's implementation and pre-train the model's options. I train the agent for 50,000 trials without a goal state or reward except the pseudo reward for each option. The pre-training allows the agent to learn the different options optimal paths so they can be useful when the agent begins to learn the actual goal.
 
 \section{The environment}
 The environment is a set of four rooms connected by passages as shown in Figure~\ref{fig:environment}. The agent can move left, right, up or down. There is a single start state and a final goal state. The agent receives reward valued at 100 if it reaches the goal state. When an agent reaches an option's sub-goal, the agent will receive 100 pseudo-reward.
@@ -116,9 +116,9 @@ The environment is a set of four rooms connected by passages as shown in Figure~
 
 \section{Model-based HRL}
 
-In essense, my approach performs monte carlo tree search (MCTS) on the environment's state space. The selection of an action then becomes about finding which action $a$ leads to the best possible $V$ value in $x$ amount of tree searches at $d$ depth. The tree search is weighted by the \textbf{W} values determined by HRL so that the searches are more likely to find the best possible path in the search space. After the agent makes an action the \textbf{W} and $V$ values are updated. In this way, the search is more likely to go down optimal paths unlike in a random tree search. This approach was used in Alpha Go to great success~\cite{silver2016mastering}. You can think of the model as looking ahead and planning the best action based on previous interactions with the environment.
+In essence, my approach performs monte carlo tree search (MCTS) on the environment's state space. The selection of an action then becomes about finding which action $a$ leads to the best possible $V$ value in $x$ amount of tree searches at $d$ depth. The tree search is weighted by the \textbf{W} values determined by HRL so that the searches are more likely to find the best possible path in the search space. After the agent makes an action the \textbf{W} and $V$ values are updated. In this way, the search is more likely to go down optimal paths unlike in a random tree search. This approach was used in Alpha Go to great success~\cite{silver2016mastering}. You can think of the model as looking ahead and planning the best action based on previous interactions with the environment.
 
-Model-based learning is required because the transition and reward functions must be known to the agent in order to perform MCTS. In my model, I explicitly give the agent the functions. However, the approach still works if both functions are approximated through sampling. I chose not to perform these steps due to time contraints and it was not my major area of focus for this paper.
+Model-based learning is required because the transition and reward functions must be known to the agent in order to perform MCTS. In my model, I explicitly give the agent the functions. However, the approach still works if both functions are approximated through sampling. I chose not to perform these steps due to time constraints and it was not my major area of focus for this paper.
 
 % I added a model-based approach of searching for the best action to take on top of the model-free HRL approach of Botvinick. My approach will essentially look ahead at future states and search for the best state value. Upon completing the search, the agent performs the first action in the chain of actions that resulted in the highest state. My approach's parameters consist of the number of searches to perform and the depth of the search at each time step.
 
@@ -135,9 +135,9 @@ Increasing the number of searches lowers the amount of trials required to reach 
 
 The model-free version performs worse. It is plotted in Figure~\ref{fig:search_changes}. It does reach the same state as the others but over a period of 500 trials whereas the model-based agent reaches the optimal state after around 60 trials.
 
-As Figure~\ref{fig:depth_changes} shows, I experimented with increasing the maximum depth, I found that the differences were negligable. I speculate that the environment may not be suited to a high search depth and that perhaps a more complex problem with a non-obvious optimal path could benefit from a high search depth.
+As Figure~\ref{fig:depth_changes} shows, I experimented with increasing the maximum depth, I found that the differences were negligible. I speculate that the environment may not be suited to a high search depth and that perhaps a more complex problem with a non-obvious optimal path could benefit from a high search depth.
 
-% \textbf{Increasing depth lowers the amount of trials required to reach the optimal amount of moves} As figure \ref{fig:depth_results} demonstrates, increasing the depth results in the agent reaching the optimal set of moves earlier. A high depth will allow the agent to explore deep pathways which $W$ has identified as a priority and to find high $V$ states which may not yet have been visited by passing through the current agent's state. The advantage to the approach is that the agent needs fewer training trials. This can be important to agents where the cost of a trial outweights the cost of computational resources. An example would be a robot that must take actions in real time.
+% \textbf{Increasing depth lowers the amount of trials required to reach the optimal amount of moves} As figure \ref{fig:depth_results} demonstrates, increasing the depth results in the agent reaching the optimal set of moves earlier. A high depth will allow the agent to explore deep pathways which $W$ has identified as a priority and to find high $V$ states which may not yet have been visited by passing through the current agent's state. The advantage to the approach is that the agent needs fewer training trials. This can be important to agents where the cost of a trial outweighs the cost of computational resources. An example would be a robot that must take actions in real time.
 
 
 
@@ -167,15 +167,15 @@ As Figure~\ref{fig:depth_changes} shows, I experimented with increasing the maxi
 \end{figure*}
 
 \section{Discussion}
-We performed policy iteration to compare my approach. Policy iteration is a model-free dynamic programming RL technique. Policy iteration finds the optimal path in only a dozen iterations, clearly outperforming my approach. However, in many problems unlike this toy problem I experimented with, the state search space makes dynammic programming approaches intractable, such as with the game GO where the game-tree complexity is approximately $10^{360}$. My approach would perform better in these areas as Alpha Go demonstrated.
+We performed policy iteration to compare my approach. Policy iteration is a model-free dynamic programming RL technique. Policy iteration finds the optimal path in only a dozen iterations, clearly outperforming my approach. However, in many problems unlike this toy problem I experimented with, the state search space makes dynamic programming approaches intractable, such as with the game GO where the game-tree complexity is approximately $10^{360}$. My approach would perform better in these areas as Alpha Go demonstrated.
 
-Model-based HRL reduces the number of trials for learning the optimal solution in HRL at the cost of additional computational resources and overhead. It is true that HRL will eventually reach the optimal state. However, the cost of computational resources may be outweighed by the cost of performing an action, for example, a robot that must take actions in real time. Thus selecting optimal actions is paramount due to the time lag between execution of actions.
+Model-based HRL reduces the number of trials for learning the optimal solution in HRL at the cost of additional computational resources and overhead. It is true that HRL will eventually reach the optimal state. However, the cost of computational resources may be outweighed by the cost of performing an action, for example, a robot that must take actions in real time. Thus selecting optimal actions is paramount due to the time lag between executions of actions.
 
-% the reduction in training trials for model-based approaches is beneficial for certain problems. Such as where an where the cost of a trial outweights the cost of computational resources. An example would be a robot that must take actions in real time.
+% the reduction in training trials for model-based approaches is beneficial for certain problems. Such as where an where the cost of a trial outweighs the cost of computational resources. An example would be a robot that must take actions in real time.
 % Explain the reasoning behind the results. Dig into interesting findings here.
 % Discuss policy iteration.
 % Why not use policy iteration if you know the T and R functions? 
-	% I dont use it because my T and R is assumed, but remains unknown. I could easily create a system that predicts the likely next state without actually using a transition function.  it out and say that yes I assume my transition function but what I could do in the future is have the transition predicted or learned itself
+	% I don't use it because my T and R is assumed, but remains unknown. I could easily create a system that predicts the likely next state without actually using a transition function.  it out and say that yes I assume my transition function but what I could do in the future is have the transition predicted or learned itself
 
 \section{Conclusion}
 For my future work, we'd like to try different problems to test whether increases in the maximum depth is useful. We'd like to combine deep convolutional networks to approximate both the state of the environment and the transition and reward functions. I would also like to determine ways to automatically generate the options ourselves.
