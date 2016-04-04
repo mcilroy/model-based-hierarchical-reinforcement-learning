@@ -2,6 +2,10 @@
 \usepackage{nips15submit_e,times}
 \usepackage{hyperref}
 \usepackage{url}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
 %\documentstyle[nips14submit_09,times,art10]{article} % For LaTeX 2.09
 
 
@@ -31,11 +35,11 @@ Halifax, Nova Scotia, Canada \\
 
 \begin{document}
 
-
+\graphicspath{{figures/}}
 \maketitle
 
 \begin{abstract}
-Describe the problem. State what you did. Present the results. Draw conclusions.
+Reinforcement learning (RL) techniques have recently shown improvement over existing approaches to some problems such as game playing. However, reinforcement learning models still suffer from having to scale to large state spaces. Hierarchical reinforcement learning has been shown to aid in scaling RL techniques by abstracting actions. We propose a model-based hierarchical reinforcement learning approach using monte carlo tree search. We found that the overall number of training trials is reduced. This finding illustrates the advantages of model-based learning methods.
 \end{abstract}
 
 

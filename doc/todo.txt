@@ -2,12 +2,39 @@ to do
 	-clean up code
 	-model = do 50,000 iterations without a goal state reward to learn options
 	fix depth not working
-	figure of results of # of searchs, including model free
-	figure of results of # of depths, including model free
-	figure of dynamic programming for discussion
+		-discount V 
+		-do not mix Vs from different policies
+		-check if you should use s instead of next_state when a sub goal or goal is reached. Do they not have V values at states?
+		-is it right to reset the value back to the original state
+			am i unfairly punishing the last move where it reaches the end goal? maybe reduce the total moves by 1?
+		-should i be setting the best V to the discounted rate?
+		-should i use depth instead of total_moves?
+			no because you need to evaulate the actual distance travelled rather than the options, 2 options vs 1 optoina and 1 primitive have same depth but different moves
+		fix:
+			set V(goal_state)= 100	
+			do not give out reward for (goal_state, a)
+			do not update V(goal_state)
+			improvement:
+				if next_state = end
+					cum_reward = cum_reward + 0
+					delta = cum_reward + reward(current_state,a) - V(current_state)
+				else
+					cum_reward = cum_reward + reward(c_s,a)
+					delta = cum_reward + V(next) - V(current_state)
+	fix checking for the best action twice when i should only be doing it once.
+		remove the first get action
+	experimental design
+		-figure of actor critic model
+		-figure of an example of state transitions
+		-figure of the environment
 	results
+		-figure of results of # of searchs, including model free
+		-figure of results of # of depths, including model free
+		figure demonstrating the optimal path at the root level
 	discussion
+		-figure of dynamic programming for discussion
 		discuss dynamic programming
+			can't work in large state space like GO with a game-tree complexity of 10^360
 		discuss why using V was wrong
 		discuss why using more searches works better
 		results show that training time increases, but number of iterations vastly decreases. Trade off. With larger CPU resources, model-based is preferable.
@@ -62,3 +89,11 @@ using V function with depth can lead to problems
 	example: moving to the bottom rooms then the goal takes longer but treated as the same as moving through the top rooms
 	solution: use discounted cumulative reward. You have an estimate, in our case we just assume the cumulative reward. But can be added to the model.
 	then the the two paths will not be equal.
+	
+	
+search	depth
+0 	0	actually means search:1	depth 1
+1 	1	actually means search:2 depth 1
+1	2	actually means search:2 depth 2
+2	1	actually means search:3 depth 1
+2	2	actually means search:3	depth 2
