@@ -1,51 +1,70 @@
 to do 
-	-clean up code
-	-model = do 50,000 iterations without a goal state reward to learn options
-	fix depth not working
-		-discount V 
-		-do not mix Vs from different policies
-		-check if you should use s instead of next_state when a sub goal or goal is reached. Do they not have V values at states?
-		-is it right to reset the value back to the original state
-			am i unfairly punishing the last move where it reaches the end goal? maybe reduce the total moves by 1?
-		-should i be setting the best V to the discounted rate?
-		-should i use depth instead of total_moves?
-			no because you need to evaulate the actual distance travelled rather than the options, 2 options vs 1 optoina and 1 primitive have same depth but different moves
-		fix:
-			set V(goal_state)= 100	
-			do not give out reward for (goal_state, a)
-			do not update V(goal_state)
-			improvement:
-				if next_state = end
-					cum_reward = cum_reward + 0
-					delta = cum_reward + reward(current_state,a) - V(current_state)
-				else
-					cum_reward = cum_reward + reward(c_s,a)
-					delta = cum_reward + V(next) - V(current_state)
-	fix checking for the best action twice when i should only be doing it once.
-		remove the first get action
-	experimental design
-		-figure of actor critic model
-		-figure of an example of state transitions
-		-figure of the environment
-	results
-		-figure of results of # of searchs, including model free
-		-figure of results of # of depths, including model free
-		figure demonstrating the optimal path at the root level
-	discussion
-		-figure of dynamic programming for discussion
-		discuss dynamic programming
-			can't work in large state space like GO with a game-tree complexity of 10^360
-		discuss why using V was wrong
-		discuss why using more searches works better
-		results show that training time increases, but number of iterations vastly decreases. Trade off. With larger CPU resources, model-based is preferable.
-	conclusion
-		future work
-	
-
-
-
-
-
+	paper:
+		move related work into introduction
+		keep intro to RL to a minumum
+		intro should be overview of the paper
+		move conclusion into discussion
+		modify sections
+			1 introduction
+			2 background 
+			3 Approach 
+			4 experiment
+		read alpha go paper
+		completed:
+			-experimental design
+				-figure of actor critic model
+				-figure of an example of state transitions
+				-figure of the environment
+			-results
+				-figure of results of # of searchs, including model free
+				-figure of results of # of depths, including model free
+				-figure demonstrating the optimal path at the root level
+			-discussion
+				-figure of dynamic programming for discussion
+				-discuss dynamic programming
+					can't work in large state space like GO with a game-tree complexity of 10^360
+				-discuss why using V was wrong
+				-discuss why using more searches works better
+				-results show that training time increases, but number of iterations vastly decreases. Trade off. With larger CPU resources, model-based is preferable.
+			-conclusion
+				future work
+			-read model-based paper from Botvinick
+			learned:
+				mb was better, they used an entire trial rather than monte carlo
+				they learned state transitions
+				they investigated how to create options
+				you can work backwards from your goal
+				maybe the room example is a bad example?
+	code:
+		fix depth not working
+			-discount V 
+			-do not mix Vs from different policies
+			-check if you should use s instead of next_state when a sub goal or goal is reached. Do they not have V values at states?
+			-is it right to reset the value back to the original state
+				am i unfairly punishing the last move where it reaches the end goal? maybe reduce the total moves by 1?
+			-should i be setting the best V to the discounted rate?
+			-should i use depth instead of total_moves?
+				no because you need to evaulate the actual distance travelled rather than the options, 2 options vs 1 optoina and 1 primitive have same depth but different moves
+			fix:
+				set V(goal_state)= 100	
+				do not give out reward for (goal_state, a)
+				do not update V(goal_state)
+				improvement:
+					if next_state = end
+						cum_reward = cum_reward + 0
+						delta = cum_reward + reward(current_state,a) - V(current_state)
+					else
+						cum_reward = cum_reward + reward(c_s,a)
+						delta = cum_reward + V(next) - V(current_state)
+		fix checking for the best action twice when i should only be doing it once.
+			remove the first get action
+		use model based to actually perform updates. lets say you start at V:10 and the left is V:30 and right is V:0. Then you move right to V:0 then V:0 then V:100. You should update even if its actually just a model in the agents head. 
+		backwards planning! cool idea, start with a goal in mind and find the best way there.
+		add sampling of the states like an agent could do
+		implement probability distribution for options expected reward, terminal states, and length of time
+		completed:
+			-clean up code
+			-model = do 50,000 iterations without a goal state reward to learn options		
 
 
 ########################################
