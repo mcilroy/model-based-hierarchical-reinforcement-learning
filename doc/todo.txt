@@ -1,9 +1,10 @@
 to do 
 	paper:
-		move related work into introduction
-		keep intro to RL to a minumum
-		intro should be overview of the paper
-		move conclusion into discussion
+		-move related work into introduction
+		-keep intro to RL to a minumum
+		-intro should be overview of the paper
+		-move conclusion into discussion
+		-dont bore anyone or waste time
 		modify sections
 			1 introduction
 			2 background 
@@ -64,9 +65,23 @@ to do
 		implement probability distribution for options expected reward, terminal states, and length of time
 		completed:
 			-clean up code
-			-model = do 50,000 iterations without a goal state reward to learn options		
+			-m   odel = do 50,000 iterations without a goal state reward to learn options		
 
 
+	future:
+		probability distributions of options
+			sample
+		creation of options
+			use expected rewards to create new sub-goals
+		communicate expert opinions on actions and states
+			assign value and actions first, then train
+			example: 1 agent learns weights and the second action copies the weights
+		problem of assigning credit to actions and values
+			trial and error you see the value, or through expert opinion of someone else doing trial and error
+			example: is going to college a good idea? many people go to college and become rich, people who don't tend not to, so it has a high value.
+		implicit reward
+			your agent gains reward by exploring
+			
 ########################################
 	experiment - test depth and search attemps
 		for search_attempts=1:10
